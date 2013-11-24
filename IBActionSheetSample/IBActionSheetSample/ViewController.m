@@ -49,13 +49,16 @@
 
 - (IBAction)standardUIActionSheetPressed:(id)sender {
     
-    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:@"Standard UIActionSheet" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Emphasis" otherButtonTitles:@"Other", @"Buttons", nil];
+    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:@"Standard UIActionSheet" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Emphasis" otherButtonTitles:@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name", @"Buttons", nil];
     [actionSheet showInView:self.view];
 }
 
 - (IBAction)standardIBActionSheetPressed:(id)sender {
 
-    self.standardIBAS = [[IBActionSheet alloc] initWithTitle:@"Standard IBActionSheet" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Emphasis" otherButtonTitlesArray:@[@"Other", @"Buttons"]];
+    /*
+     self.standardIBAS = [[IBActionSheet alloc] initWithTitle:@"Standard IBActionSheet" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Emphasis" otherButtonTitlesArray:@[@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name", @"Buttons"]];
+     */
+    self.standardIBAS = [[IBActionSheet alloc] initWithTitle:@"Standard IBActionSheet" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Emphasis" otherButtonTitlesArray:@[@"FollowMe Mobile | Text Message | long name",@"FollowMe Mobile | Text Message | long name", @"Buttons"]];
     [self.standardIBAS showInView:self.view];
 }
 

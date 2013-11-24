@@ -184,13 +184,20 @@
     
     float height;
     float width;
+    float screenWidth;
+    float screenHeight;
+    float statusBarHeight = 20.0f;
     
     if (UIInterfaceOrientationIsPortrait([[UIApplication sharedApplication] statusBarOrientation])) {
         width = CGRectGetWidth([UIScreen mainScreen].bounds);
+        screenWidth = CGRectGetWidth([UIScreen mainScreen].bounds);
+        screenHeight = CGRectGetHeight([UIScreen mainScreen].bounds);
     } else {
         width = CGRectGetHeight([UIScreen mainScreen].bounds);
+        screenWidth = CGRectGetHeight([UIScreen mainScreen].bounds);
+        screenHeight = CGRectGetWidth([UIScreen mainScreen].bounds);
     }
-    
+    NSLog(@"Main Screen: %@", [UIScreen mainScreen]);
     
     // slight adjustment to take into account non-retina devices
     if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)]
@@ -212,32 +219,110 @@
             height += CGRectGetHeight(self.titleView.frame) - 44;
         }
         
-        self.frame = CGRectMake(0, 0, width, height);
-        [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-        
-        CGPoint pointOfReference = CGPointMake(CGRectGetWidth(self.frame) / 2.0, CGRectGetHeight(self.frame) - 30);
-        
-        int whereToStop;
-        if (self.hasCancelButton) {
-            [self addSubview:[self.buttons lastObject]];
-            [[self.buttons lastObject] setCenter:pointOfReference];
-            [[self.buttons objectAtIndex:0] setCenter:CGPointMake(pointOfReference.x, pointOfReference.y - 52)];
-            pointOfReference = CGPointMake(pointOfReference.x, pointOfReference.y - 52);
-            whereToStop = self.buttons.count - 2;
-        } else {
-            [self addSubview:[self.buttons lastObject]];
-            [[self.buttons lastObject] setCenter:pointOfReference];
-            whereToStop = self.buttons.count - 1;
+        if(height >= screenHeight)
+        {
+            height = 0.0f;
+            
+            if (self.buttons.count) {
+                height += (self.buttons.count * 44.5);
+            }
+            if (self.titleView) {
+                height += CGRectGetHeight(self.titleView.frame) - 44;
+            }
+            
+            self.frame = CGRectMake(0, 0, width, screenHeight);
+            NSLog(@"Self: %@", self);
+            [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+            
+            CGPoint pointOfReference = CGPointMake(304 / 2.0, height - (44.5/2.0f) + 5.25);
+            float scrollViewY = CGRectGetHeight(self.titleView.frame) + statusBarHeight + (self.hasDestructiveButton ? 44.5 : 0);
+            float scrollViewHeight = screenHeight - 60 - scrollViewY;
+            UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(8,scrollViewY,304,scrollViewHeight-10)];
+            scrollView.backgroundColor = [UIColor whiteColor];
+            scrollView.alpha = 0.95f;
+            UIView* whiteView = [[UIView alloc] initWithFrame:CGRectMake(8,scrollViewY + scrollViewHeight-10,304,10.0f)];
+            whiteView.backgroundColor = [UIColor whiteColor];
+            UIBezierPath *rounded = [UIBezierPath bezierPathWithRoundedRect:whiteView.bounds
+                                                          byRoundingCorners:(UIRectCornerBottomLeft | UIRectCornerBottomRight)
+                                                                cornerRadii:CGSizeMake(4.0, 4.0)];
+            CAShapeLayer *shape = [[CAShapeLayer alloc] init];
+            [shape setPath:rounded.CGPath];
+            whiteView.layer.mask = shape;
+            whiteView.alpha = 0.95f;
+            [self addSubview:whiteView];
+            
+            int whereToStop;
+            if (self.hasCancelButton) {
+                UIView *buttonView = [self.buttons lastObject];
+                
+                [self addSubview:buttonView];
+                [[self.buttons lastObject] setCenter:CGPointMake(screenWidth / 2.0, screenHeight - 30)];
+                [[self.buttons objectAtIndex:0] setCenter:CGPointMake(pointOfReference.x, pointOfReference.y - 52)];
+                pointOfReference = CGPointMake(pointOfReference.x, pointOfReference.y - 52);
+                NSLog(@"Cancel Button: %@", buttonView);
+                whereToStop = self.buttons.count - 2;
+            } else {
+                UIView *buttonView = [self.buttons lastObject];
+                [self addSubview:buttonView];
+                [[self.buttons lastObject] setCenter:pointOfReference];
+                NSLog(@"Button: %@", buttonView);
+                whereToStop = self.buttons.count - 1;
+            }
+            
+            if(self.hasDestructiveButton)
+            {
+                UIView *buttonView = [self.buttons objectAtIndex:0];
+                [self addSubview:buttonView];
+                [[self.buttons objectAtIndex:0] setCenter:CGPointMake(screenWidth/2.0,CGRectGetHeight(self.titleView.frame) + statusBarHeight+22)];
+                NSLog(@"Destructive Button: %@", buttonView);
+            }
+            
+            for (int i = (self.hasDestructiveButton ? 1 : 0), j = whereToStop; i <= whereToStop; ++i, --j) {
+                UIView *buttonView = [self.buttons objectAtIndex:i];
+                //[self addSubview:buttonView];
+                [scrollView addSubview:buttonView];
+                [[self.buttons objectAtIndex:i] setCenter:CGPointMake(pointOfReference.x, pointOfReference.y - (44.5 * j))];
+                NSLog(@"Button: %@", buttonView);
+            }
+            
+            if (self.titleView) {
+                NSLog(@"Title View: %@",self.titleView);
+                [self addSubview:self.titleView];
+                self.titleView.center = CGPointMake(self.center.x, (CGRectGetHeight(self.titleView.frame) / 2.0) + statusBarHeight);
+            }
+            
+            [self addSubview:scrollView];
+            [scrollView setContentSize:CGSizeMake(CGRectGetWidth(scrollView.frame), height - 60 - (self.hasDestructiveButton ? 44.5 : 0) + 15)];
         }
-        
-        for (int i = 0, j = whereToStop; i <= whereToStop; ++i, --j) {
-            [self addSubview:[self.buttons objectAtIndex:i]];
-            [[self.buttons objectAtIndex:i] setCenter:CGPointMake(pointOfReference.x, pointOfReference.y - (44.5 * j))];
-        }
-        
-        if (self.titleView) {
-            [self addSubview:self.titleView];
-            self.titleView.center = CGPointMake(self.center.x, CGRectGetHeight(self.titleView.frame) / 2.0);
+        else
+        {
+            self.frame = CGRectMake(0, 0, width, height);
+            [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+            
+            CGPoint pointOfReference = CGPointMake(CGRectGetWidth(self.frame) / 2.0, CGRectGetHeight(self.frame) - 30);
+            
+            int whereToStop;
+            if (self.hasCancelButton) {
+                [self addSubview:[self.buttons lastObject]];
+                [[self.buttons lastObject] setCenter:pointOfReference];
+                [[self.buttons objectAtIndex:0] setCenter:CGPointMake(pointOfReference.x, pointOfReference.y - 52)];
+                pointOfReference = CGPointMake(pointOfReference.x, pointOfReference.y - 52);
+                whereToStop = self.buttons.count - 2;
+            } else {
+                [self addSubview:[self.buttons lastObject]];
+                [[self.buttons lastObject] setCenter:pointOfReference];
+                whereToStop = self.buttons.count - 1;
+            }
+            
+            for (int i = 0, j = whereToStop; i <= whereToStop; ++i, --j) {
+                [self addSubview:[self.buttons objectAtIndex:i]];
+                [[self.buttons objectAtIndex:i] setCenter:CGPointMake(pointOfReference.x, pointOfReference.y - (44.5 * j))];
+            }
+            
+            if (self.titleView) {
+                [self addSubview:self.titleView];
+                self.titleView.center = CGPointMake(self.center.x, CGRectGetHeight(self.titleView.frame) / 2.0);
+            }
         }
         
     } else {
@@ -710,6 +795,7 @@
     self.backgroundColor = [UIColor whiteColor];
     self.originalBackgroundColor = self.backgroundColor;
     self.titleLabel.font = [UIFont systemFontOfSize:21];
+    self.titleLabel.adjustsFontSizeToFitWidth = YES;
     [self setTitleColor:[UIColor colorWithRed:0.000 green:0.500 blue:1.000 alpha:1.000] forState:UIControlStateAll];
     self.originalTextColor = [UIColor colorWithRed:0.000 green:0.500 blue:1.000 alpha:1.000];
     
@@ -729,8 +815,8 @@
 
 - (id)initWithBottomCornersRounded {
     self = [self init];
-    [self setMaskTo:self byRoundingCorners:UIRectCornerBottomLeft | UIRectCornerBottomRight];
-    self.cornerType = IBActionSheetButtonCornerTypeBottomCornersRounded;
+    //[self setMaskTo:self byRoundingCorners:UIRectCornerBottomLeft | UIRectCornerBottomRight];
+    //self.cornerType = IBActionSheetButtonCornerTypeBottomCornersRounded;
     return self;
 }
 
